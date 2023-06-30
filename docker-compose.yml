@@ -1,0 +1,37 @@
+version: '3.7'
+
+x-logging: &loki-logging
+  driver: loki
+  options:
+    loki-url: "${LOKI_SERVER}api/prom/push"
+
+services:
+  django:
+    build: .
+    command: ["bash", "docker-entrypoint.sh", "server", "${PROJECT_NAME}"]
+    image: ${DOCKER_REGISTRY}/${APP_NAME}:${VERSION}
+    container_name: ${APP_NAME}
+    ports:
+      - "${PORT}:8000"
+    networks:
+      - wedat-service
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      RPC_SERVICE_1: ${RPC_SERVICE_1}
+      LOG_LEVEL: ${LOG_LEVEL}
+      URL_SERVER_BACKEND: ${URL_SERVER_BACKEND}
+      PASSWORD_ADMIN_DJANGO: ${PASSWORD_ADMIN_DJANGO}
+      USER_ADMIN_DJANGO: ${USER_ADMIN_DJANGO}
+    volumes:
+      - logs_volume:/logs
+    logging: *loki-logging
+    stdin_open: true
+    privileged: true
+    tty: true
+volumes:
+  logs_volume:
+networks:
+  wedat-service:
+
+
+  
